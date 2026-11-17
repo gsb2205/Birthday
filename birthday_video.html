@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Happy Birthday!</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #fff3f7;
+      color: #5b3554;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 15% 15%, #ffe1ec 0, transparent 30%),
+        radial-gradient(circle at 85% 85%, #ffe7c7 0, transparent 32%),
+        #fff8fa;
+    }
+
+    main {
+      width: min(100%, 520px);
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: #a64b78;
+      font-size: clamp(1.35rem, 5vw, 2rem);
+    }
+
+    p {
+      margin: 0 0 16px;
+      color: #795a73;
+      line-height: 1.5;
+    }
+
+    .card-frame {
+      position: relative;
+      width: min(100%, 360px);
+      margin: 0 auto 18px;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 22px;
+      box-shadow: 0 18px 48px #9b507333;
+      background: #fff1f4;
+      cursor: pointer;
+    }
+
+    #play {
+      position: absolute;
+      top: 62%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      white-space: nowrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 19px;
+      color: white;
+      background: #bf5b89;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 5px 14px #a8467030;
+    }
+
+    button:hover { background: #a84875; }
+    button:focus-visible { outline: 3px solid #66334f; outline-offset: 3px; }
+
+    #status {
+      min-height: 1.5em;
+      margin-top: 12px;
+      font-size: .92rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>A little birthday surprise 🎂</h1>
+    <div class="card-frame">
+      <canvas id="card" width="1080" height="1920" role="button" tabindex="0" aria-label="Open your birthday card"></canvas>
+      <button id="play" type="button">💌 Click here to open 💌</button>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const canvas = document.querySelector("#card");
+      const ctx = canvas.getContext("2d");
+      const status = document.querySelector("#status");
+      const playButton = document.querySelector("#play");
+      const duration = 16000;
+      let startedAt = null;
+
+      const colors = {
+        pink: "#f6a8c6",
+        deepPink: "#d96899",
+        cream: "#fff8ed",
+        brown: "#a96f58",
+        darkBrown: "#704637",
+        gold: "#f4c96b",
+        lilac: "#b9a2df",
+        mint: "#8fcabb"
+      };
+
+      function roundedRect(x, y, w, h, r, fill, stroke) {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, r);
+        ctx.fillStyle = fill;
+        ctx.fill();
+        if (stroke) {
+          ctx.lineWidth = 8;
+          ctx.strokeStyle = stroke;
+          ctx.stroke();
+        }
+      }
+
+      function text(value, x, y, size, color, weight = 700, family = "Georgia, serif") {
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = `${weight} ${size}px ${family}`;
+        ctx.fillStyle = color;
+        ctx.fillText(value, x, y);
+      }
+
+      function drawBalloon(x, y, color, scale, phase) {
+        const sway = Math.sin(phase * 2 + x) * 13;
+        ctx.save();
+        ctx.translate(x + sway, y);
+        ctx.scale(scale, scale);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 64, 82, -0.12, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(-20, -27, 12, 23, -0.5, 0, Math.PI * 2);
+        ctx.fillStyle = "#ffffff66";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(-8, 80);
+        ctx.lineTo(0, 97);
+        ctx.lineTo(8, 80);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(0, 97);
+        ctx.bezierCurveTo(-25, 145, 28, 180, Math.sin(phase + x) * 20, 230);
+        ctx.strokeStyle = "#9c759080";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      function drawBear(x, y, scale, bowColor, wave) {
+        ctx.save();
+        ctx.translate(x, y + Math.sin(wave) * 8);
+        ctx.scale(scale, scale);
+        ctx.fillStyle = colors.brown;
+        ctx.beginPath();
+        ctx.ellipse(0, 105, 94, 105, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(-66, -4, 37, 39, 0, 0, Math.PI * 2);
+        ctx.ellipse(66, -4, 37, 39, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#e7b6a1";
+        ctx.beginPath();
+        ctx.arc(-66, -4, 19, 0, Math.PI * 2);
+        ctx.arc(66, -4, 19, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = colors.brown;
+        ctx.beginPath();
+        ctx.arc(0, 14, 83, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#f4d8bd";
+        ctx.beginPath();
+        ctx.ellipse(0, 43, 42, 30, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = colors.darkBrown;
+        ctx.beginPath();
+        ctx.arc(-28, 8, 7, 0, Math.PI * 2);
+        ctx.arc(28, 8, 7, 0, Math.PI * 2);
+        ctx.arc(0, 35, 9, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(0, 43);
+        ctx.quadraticCurveTo(-7, 54, -16, 49);
+        ctx.moveTo(0, 43);
+        ctx.quadraticCurveTo(7, 54, 16, 49);
+        ctx.strokeStyle = colors.darkBrown;
+        ctx.lineWidth = 4;
+        ctx.stroke();
+        roundedRect(-34, 117, 68, 34, 15, bowColor);
+        ctx.beginPath();
+        ctx.arc(-38, 134, 20, 0, Math.PI * 2);
+        ctx.arc(38, 134, 20, 0, Math.PI * 2);
+        ctx.fillStyle = bowColor;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawMouse(x, y, scale, wave) {
+        ctx.save();
+        ctx.translate(x, y + Math.sin(wave) * 8);
+        ctx.scale(scale, scale);
+        ctx.fillStyle = "#d5c8ef";
+        ctx.beginPath();
+        ctx.ellipse(-39, -84, 31, 39, -0.35, 0, Math.PI * 2);
+        ctx.ellipse(39, -84, 31, 39, 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#a78bd0";
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 65, 78, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#f5eafa";
+        ctx.beginPath();
+        ctx.ellipse(0, 19, 43, 40, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#4e3b62";
+        ctx.beginPath();
+        ctx.arc(-23, -14, 6, 0, Math.PI * 2);
+        ctx.arc(23, -14, 6, 0, Math.PI * 2);
+        ctx.arc(0, 10, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = "#4e3b62";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(0, 18);
+        ctx.quadraticCurveTo(-10, 32, -20, 25);
+        ctx.moveTo(0, 18);
+        ctx.quadraticCurveTo(10, 32, 20, 25);
+        ctx.stroke();
+        ctx.fillStyle = colors.deepPink;
+        ctx.beginPath();
+        ctx.ellipse(0, 77, 51, 35, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = colors.gold;
+        ctx.beginPath();
+        ctx.arc(0, 76, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawSparkle(x, y, radius, color, rotation = 0) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(rotation);
+        ctx.beginPath();
+        ctx.moveTo(0, -radius);
+        ctx.quadraticCurveTo(radius * .16, -radius * .16, radius, 0);
+        ctx.quadraticCurveTo(radius * .16, radius * .16, 0, radius);
+        ctx.quadraticCurveTo(-radius * .16, radius * .16, -radius, 0);
+        ctx.quadraticCurveTo(-radius * .16, -radius * .16, 0, -radius);
+        ctx.fillStyle = color;
+        ctx.fill();
+        ctx.restore();
+      }
+
+      function drawScene(now) {
+        const elapsed = startedAt === null ? 0 : Math.min(now - startedAt, duration);
+        const t = elapsed / 1000;
+        const opening = Math.max(0, Math.min(1, (t - 1.2) / 2.2));
+        const eased = 1 - Math.pow(1 - opening, 3);
+        const reveal = Math.max(0, Math.min(1, (t - 2.9) / 1.2));
+
+        const bg = ctx.createLinearGradient(0, 0, 1080, 1920);
+        bg.addColorStop(0, "#ffeaf1");
+        bg.addColorStop(.52, "#fff6ee");
+        bg.addColorStop(1, "#f7eaff");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, 1080, 1920);
+
+        for (let i = 0; i < 17; i++) {
+          const x = (i * 179 + 63) % 1080;
+          const y = (i * 263 + 112) % 1920;
+          drawSparkle(x, y + Math.sin(t * 1.5 + i) * 18, 12 + (i % 3) * 5,
+            i % 2 ? "#f4c96b99" : "#df9ebc88", t * .3 + i);
+        }
+
+        if (t < 3.4) {
+          drawBalloon(155, 330, colors.deepPink, .8, t);
+          drawBalloon(925, 375, colors.lilac, .72, t);
+        }
+
+        const cardX = 105, cardY = 340, cardW = 870, cardH = 1235;
+        ctx.save();
+        ctx.shadowColor = "#81506b30";
+        ctx.shadowBlur = 35;
+        ctx.shadowOffsetY = 20;
+        roundedRect(cardX, cardY, cardW, cardH, 48, colors.cream, "#e9c9d6");
+        ctx.restore();
+
+        ctx.save();
+        ctx.globalAlpha = reveal;
+        text("Happy Birthday Suchi!!!", 540, 590, 72, "#c65383");
+        text("I wish nuvu epudu bagundali", 540, 685, 39, "#805771", 600);
+        text("and always keep smiling 😄😄", 540, 742, 39, "#805771", 600);
+        drawBear(310, 1030, .85, colors.deepPink, t * 2);
+        drawBear(770, 1030, .85, colors.lilac, t * 2 + 1);
+        drawMouse(540, 1135, .82, t * 2 + 2);
+        text("Wishing you all the joy,", 540, 1340, 38, "#805771", 600);
+        text("laughter you deserve in life!", 540, 1393, 38, "#805771", 600);
+        text("♡", 540, 1480, 48, "#c65383");
+        ctx.restore();
+
+        const balloonAlpha = Math.max(0, Math.min(1, reveal * 1.7));
+        ctx.save();
+        ctx.globalAlpha = balloonAlpha;
+        drawBalloon(137, 420, "#f58ab2", .64, t);
+        drawBalloon(942, 510, "#78c8bb", .62, t + 2);
+        drawBalloon(115, 1455, "#f4c96b", .55, t + 3);
+        drawBalloon(970, 1410, "#b9a2df", .58, t + 4);
+        ctx.restore();
+
+        if (opening < 1) {
+          ctx.save();
+          const coverWidth = cardW * (1 - eased);
+          const coverLeft = cardX + (cardW - coverWidth) / 2;
+          roundedRect(coverLeft, cardY, Math.max(0, coverWidth), cardH, 48, "#ed9fbd", "#d67e9f");
+          if (coverWidth > 100) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(coverLeft, cardY, coverWidth, cardH);
+            ctx.clip();
+            text("A Birthday Wish", 540, 805, 72, "#fffaf2");
+            text("just for you ♡", 540, 900, 52, "#fffaf2", 600);
+            drawSparkle(540, 1050, 58, "#ffe2a6", t);
+            ctx.restore();
+          }
+          ctx.restore();
+        }
+
+        if (t > 4) {
+          for (let i = 0; i < 34; i++) {
+            const x = (i * 137 + Math.sin(t * 1.8 + i) * 85 + 1080) % 1080;
+            const y = ((i * 107 + t * 125) % 1700) + 70;
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(t + i);
+            ctx.fillStyle = ["#f58ab2", "#f4c96b", "#9accc0", "#b9a2df"][i % 4];
+            ctx.fillRect(-6, -12, 12, 24);
+            ctx.restore();
+          }
+        }
+
+        requestAnimationFrame(drawScene);
+      }
+
+      function replay() {
+        startedAt = performance.now();
+        playButton.hidden = true;
+        canvas.setAttribute("aria-label", "Replay your birthday card");
+        status.textContent = "Enjoy your birthday surprise!";
+      }
+
+      playButton.addEventListener("click", replay);
+      canvas.addEventListener("click", replay);
+      canvas.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          replay();
+        }
+      });
+
+      requestAnimationFrame(drawScene);
+    })();
+  </script>
+</body>
+</html>
